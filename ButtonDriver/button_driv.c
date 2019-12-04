@@ -15,7 +15,7 @@
 
 #define GPIO_BASE_ADDR 0x3F200000
 
-#define IOCTL_MAGIC_NUMBER 'j'
+#define IOCTL_MAGIC_NUMBER 'b'
 #define IOCTL_CMD_GET_STATUS _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
 
 int button_open(struct inode *inode, struct file *flip){

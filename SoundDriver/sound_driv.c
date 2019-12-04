@@ -15,7 +15,7 @@
 
 #define GPIO_BASE_ADDR 0x3F200000
 
-#define IOCTL_MAGIC_NUMBER 'j'
+#define IOCTL_MAGIC_NUMBER 's'
 #define IOCTL_CMD_COMMAND _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
 
 int sound_open(struct inode *inode, struct file *flip){
