@@ -10,6 +10,8 @@
 #include <asm/io.h>
 #include <asm/uaccess.h>
 
+#include "heaven_header.h"
+
 #define GAS_MAJOR_NUMBER 503
 #define GAS_DEV_NAME "gas_ioctl"
 
@@ -18,8 +20,12 @@
 #define IOCTL_MAGIC_NUMBER 'g'
 #define IOCTL_CMD_GET_STATUS _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
 
+#define IOCTL_TEST _IOWR(IOCTL_MAGIC_NUMBER, 1, int)
+
 int gas_open(struct inode *inode, struct file *flip){
 	printk(KERN_ALERT "GAS driver open!!\n");
+	pioInit();
+	spiinit();
 	return 0;	
 }
 
@@ -30,10 +36,19 @@ int gas_release(struct inode *inode, struct file *flip){
 
 long gas_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
 {
+	int i = 0;
+	char temp;
+	char test_string[6] = {'1', '2', '3', 'a', 'b', 'c'};
 	switch(cmd) {
 		case IOCTL_CMD_GET_STATUS:
 			/* TO BE IMPLEMENTED */
 			return 0; // return some value
+		case IOCTL_TEST:
+			for(i = 0 ; i < 6; i++)
+			{
+				temp = spiSendReceive(test_string[i]);
+				printk("SPI Receive %c", temp);
+			}	
 		break;
 	}
 
