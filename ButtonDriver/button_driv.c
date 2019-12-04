@@ -16,7 +16,7 @@
 #define GPIO_BASE_ADDR 0x3F200000
 
 #define IOCTL_MAGIC_NUMBER 'j'
-#define IOCTL_CMD_COMMAND _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
+#define IOCTL_CMD_GET_STATUS _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
 
 int button_open(struct inode *inode, struct file *flip){
 	printk(KERN_ALERT "BUTTON driver open!!\n");
@@ -30,6 +30,13 @@ int button_release(struct inode *inode, struct file *flip){
 
 long button_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
 {
+	switch(cmd) {
+		case IOCTL_CMD_GET_STATUS:
+			/* TO BE IMPLEMENTED */
+			return 0; // return some value
+		break;
+	}
+
 	return 0;
 }
 
