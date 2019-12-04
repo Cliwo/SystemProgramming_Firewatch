@@ -16,7 +16,12 @@
 #define GPIO_BASE_ADDR 0x3F200000
 
 #define IOCTL_MAGIC_NUMBER 'j'
-#define IOCTL_CMD_COMMAND _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
+
+#define MOTOR_STATUS_HOLT 0
+#define MOTOR_STATUS_IS_WINDING 1
+#define IOCTL_CMD_GET_STATUS _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
+#define IOCTL_CMD_START_WINDING _IOWR(IOCTL_MAGIC_NUMBER, 1, int)
+#define IOCTL_CMD_STOP_WINDING _IOWR(IOCTL_MAGIC_NUMBER, 2, int)
 
 int motor_open(struct inode *inode, struct file *flip){
 	printk(KERN_ALERT "MOTOR driver open!!\n");
@@ -30,6 +35,18 @@ int motor_release(struct inode *inode, struct file *flip){
 
 long motor_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
 {
+	switch(cmd) {
+		case IOCTL_CMD_GET_STATUS:
+			/* TO BE IMPLEMENTED */
+			return 0; // return some value
+		break;
+		case IOCTL_CMD_START_WINDING:
+			/* TO BE IMPLEMENTED */
+		break;
+		case IOCTL_CMD_STOP_WINDING:
+			/* TO BE IMPLEMENTED */
+		break;
+	}
 	return 0;
 }
 
