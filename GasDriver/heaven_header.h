@@ -1,8 +1,10 @@
-#include <sys/mman.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <linux/init.h>
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/fs.h>
+#include <linux/uaccess.h>
+#include <linux/slab.h>
+#include <linux/delay.h>
 
 // GPIO FSEL Types
 #define INPUT  0
@@ -230,43 +232,8 @@ void pioInit() {
 	int  mem_fd;
 	void *reg_map;
 
-	// /dev/mem is a psuedo-driver for accessing memory in the Linux filesystem
-	if ((mem_fd = open("/dev/mem", O_RDWR|O_SYNC) ) < 0) {
-	      printf("can't open /dev/mem \n");
-	      exit(-1);
-	}
-
-	reg_map = mmap(
-	  NULL,             //Address at which to start local mapping (null means don't-care)
-      BLOCK_SIZE,       //Size of mapped memory block
-      PROT_READ|PROT_WRITE,// Enable both reading and writing to the mapped memory
-      MAP_SHARED,       // This program does not have exclusive access to this memory
-      mem_fd,           // Map to /dev/mem
-      GPIO_BASE);       // Offset to GPIO peripheral
-
-	if (reg_map == MAP_FAILED) {
-      printf("gpio mmap error %d\n", (int)reg_map);
-      close(mem_fd);
-      exit(-1);
-    }
-
-	gpio = (volatile unsigned *)reg_map;
-
-    reg_map = mmap(
-	  NULL,             //Address at which to start local mapping (null means don't-care)
-      BLOCK_SIZE,       //Size of mapped memory block
-      PROT_READ|PROT_WRITE,// Enable both reading and writing to the mapped memory
-      MAP_SHARED,       // This program does not have exclusive access to this memory
-      mem_fd,           // Map to /dev/mem
-      SPI0_BASE);       // Offset to SPI peripheral
-
-    if (reg_map == MAP_FAILED) {
-      printf("spi mmap error %d\n", (int)reg_map);
-      close(mem_fd);
-      exit(-1);
-    }
-
-    spi = (volatile unsigned *)reg_map; 
+    gpio_base = ioremap(GPIO_BASE, 0x60);
+    spi = ioremap(SPI0_BASE, 0x60);
 }
 
 void pinMode(int pin, int function) {
