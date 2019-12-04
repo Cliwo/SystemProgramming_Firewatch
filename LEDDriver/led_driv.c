@@ -19,9 +19,10 @@
 #define GPCLR0 0x28
 
 #define IOCTL_MAGIC_NUMBER 'j'
-#define IOCTL_CMD_SET_DIRECTION _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
-#define IOCTL_CMD_BLINK _IOWR(IOCTL_MAGIC_NUMBER, 1, int)
-#define IOCTL_CMD_TOGGLE _IOWR(IOCTL_MAGIC_NUMBER, 2, int)
+#define IOCTL_CMD_ON _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
+#define IOCTL_CMD_OFF _IOWR(IOCTL_MAGIC_NUMBER, 1, int)
+#define IOCTL_CMD_SET_BRIGHTNESS _IOWR(IOCTL_MAGIC_NUMBER, 2, int)
+
 
 static void __iomem *gpio_base;
 volatile unsigned int *gpsel1;
@@ -38,6 +39,7 @@ int led_open(struct inode *inode, struct file *flip){
 	gpset1 = (volatile unsigned int *)(gpio_base + GPSET0);
 	gpclr1 = (volatile unsigned int *)(gpio_base +GPCLR0);
 	
+	*gpsel1 |= (1<<24); //LED set direction out
 	return 0;	
 }
 
@@ -53,43 +55,16 @@ long led_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
 	int i = 0;
 	
 	switch(cmd) {
-		case IOCTL_CMD_SET_DIRECTION:
-			copy_from_user(&kbuf, (const void*)arg, 4);
-			if(kbuf == 0){
-				//set direction in
-				printk(KERN_ALERT "LED set direction in!!\n");
-				*gpsel1 |= (0<<24);
-			}else if(kbuf == 1){
-				printk(KERN_ALERT "LED set direction out!!\n");
-				*gpsel1 |= (1<<24);
-			}else{
-				//error
-				printk(KERN_ALERT "ERROR direction parameter error\n");
-				return -1;
-			}
+		case IOCTL_CMD_ON:
+			printk(KERN_ALERT "LED on!!\n");
+			*gpset1 |= (1<<18);
 			break;
-		case IOCTL_CMD_BLINK:
-			copy_from_user(&kbuf, (const void*)arg, 4);
-			for(i=0; i<kbuf; i++){
-				printk(KERN_ALERT "LED on!!\n");
-				*gpset1 |= (1<<18);
-				ssleep(1);
-				printk(KERN_ALERT "LED off!!\n");
-				*gpclr1 |= (1<<18);
-				ssleep(1);
-			}
+		case IOCTL_CMD_OFF:
+			printk(KERN_ALERT "LED off!!\n");
+			*gpclr1 |= (1<<18);
 			break;
-		case IOCTL_CMD_TOGGLE:
-			if(led_state)
-			{
-				*gpclr1 |= (1<<18);
-				led_state = 0;
-			}
-			else
-			{
-				*gpset1 |= (1<<18);
-				led_state = 1;
-			}
+		case IOCTL_CMD_SET_BRIGHTNESS:
+			/* TO BE IMPLEMENTED */
 			break;
 		}
 	return 0;
