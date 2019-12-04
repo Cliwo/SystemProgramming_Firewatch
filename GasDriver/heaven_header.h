@@ -228,11 +228,11 @@ typedef struct
 #define SPI0DLEN (* (volatile unsigned int *) (spi + 3))
 
 // TODO: return error code instead of printing (mem_fd, reg_map)
-void pioInit() {
+void pioInit(void) {
 	int  mem_fd;
 	void *reg_map;
 
-    gpio_base = ioremap(GPIO_BASE, 0x60);
+    gpio = ioremap(GPIO_BASE, 0x60);
     spi = ioremap(SPI0_BASE, 0x60);
 }
 
