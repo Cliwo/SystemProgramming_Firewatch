@@ -21,11 +21,13 @@
 #define IOCTL_CMD_GET_STATUS _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
 
 #define IOCTL_TEST _IOWR(IOCTL_MAGIC_NUMBER, 1, int)
+#define IOCTL_SET_FREQUENCY _IOWR(IOCTL_MAGIC_NUMBER, 2, int)
+#define IOCTL_TEST_REAL_DEV _IOWR(IOCTL_MAGIC_NUMBER, 3, int)
 
 int gas_open(struct inode *inode, struct file *flip){
 	printk(KERN_ALERT "GAS driver open!!\n");
 	pioInit();
-	spiInit(1, 0);
+	spiInit(250, 0);
 	return 0;	
 }
 
@@ -46,10 +48,20 @@ long gas_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
 		case IOCTL_TEST:
 			for(i = 0 ; i < 6; i++)
 			{
-				//temp = spiSendReceive(test_string[i]);
-				temp = spiReceive();
+				temp = spiSendReceive(test_string[i]);
 				printk("SPI Receive %c", temp);
-			}	
+			}
+		break;
+	
+		case IOCTL_SET_FREQUENCY :
+			printk("SPI Set Clock %ld", arg);
+			spiSetClock(arg);
+		break;
+		
+		case IOCTL_TEST_REAL_DEV:
+			temp = spiSendReceiveDecimal(0);
+			printk("SPI Receive %c", temp);
+			return temp;
 		break;
 	}
 

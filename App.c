@@ -45,6 +45,8 @@
 /* GAS */
 #define G_IOCTL_CMD_GET_STATUS _IOWR(GAS_IOCTL_MAGIC_NUMBER, 0, int)
 #define IOCTL_TEST _IOWR(GAS_IOCTL_MAGIC_NUMBER, 1, int)
+#define IOCTL_SET_FREQUENCY _IOWR(GAS_IOCTL_MAGIC_NUMBER, 2, int)
+#define IOCTL_TEST_REAL_DEV _IOWR(GAS_IOCTL_MAGIC_NUMBER, 3, int)
 
 /* MOTOR */
 #define M_IOCTL_CMD_GET_STATUS _IOWR(MOTOR_IOCTL_MAGIC_NUMBER, 0, int)
@@ -70,6 +72,8 @@ void test_gas(int fd)
 
 int main()
 {
+	int i = 20;
+	long temp;
 	dev_t led_dev, button_dev, gas_dev, motor_dev, sound_dev;
 	int led_fd , button_fd, gas_fd, motor_fd, sound_fd;
 
@@ -77,12 +81,22 @@ int main()
 	//init_dev(&button_dev, &button_fd, BUTTON_MAJOR_NUMBER, BUTTON_MINOR_NUMBER, BUTTON_DEV_PATH_NAME);
 	init_dev(&gas_dev, &gas_fd, GAS_MAJOR_NUMBER, GAS_MINOR_NUMBER, GAS_DEV_PATH_NAME);
 	/* main code */
-	test_gas(gas_fd);
+	
 
 	//close(button_fd);
 	//close(led_dev);
 	
-	printf("Done");
+		// ioctl(gas_fd, IOCTL_SET_FREQUENCY, 1);
+		// ioctl(gas_fd, IOCTL_TEST, NULL);
+	
+	// return 0;
+	
+	ioctl(gas_fd, IOCTL_SET_FREQUENCY, 250);
+	while(1)
+	{	
+		temp = ioctl(gas_fd, IOCTL_TEST_REAL_DEV, NULL);
+		printf("SPI %d\n", (int)temp);
+	}
     close(gas_dev);
 	return 0;
 }
