@@ -25,7 +25,7 @@
 int gas_open(struct inode *inode, struct file *flip){
 	printk(KERN_ALERT "GAS driver open!!\n");
 	pioInit();
-	spiinit();
+	spiInit(1, 0);
 	return 0;	
 }
 
