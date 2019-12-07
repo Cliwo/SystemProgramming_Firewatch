@@ -276,6 +276,10 @@ void spiInit(int freq, int settings) {
     SPI0CSbits.TA = 1;          // turn SPI on with the "transfer active" bit
 }
 
+char spiReceive()
+{
+    return SPI0FIFO;
+}
 char spiSendReceive(char send){
     SPI0FIFO = send;            // send data to slave
     while(!SPI0CSbits.DONE);    // wait until SPI transmission complete

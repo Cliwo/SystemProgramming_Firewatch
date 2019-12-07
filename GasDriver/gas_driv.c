@@ -46,7 +46,8 @@ long gas_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
 		case IOCTL_TEST:
 			for(i = 0 ; i < 6; i++)
 			{
-				temp = spiSendReceive(test_string[i]);
+				//temp = spiSendReceive(test_string[i]);
+				temp = spiReceive();
 				printk("SPI Receive %c", temp);
 			}	
 		break;
