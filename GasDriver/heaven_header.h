@@ -299,28 +299,19 @@ short spiSendReceive16(short send) {
     return rec;
 }
 
-int spiSendReceiveDecimal(int send) {
+int spiReceiveDecimal(void) {
     int result;
     char buffer[3] = {1}; 
-    char buffer_rev[3] = {1};
-    buffer[1] = (8) << 4;
-    buffer_rev[1] = (8) << 4;
+    buffer[1] = (8) << 4; //8 is magic number. please refer to 'http://shaunsbennett.com/piblog/?p=266'
+    //original value was channelConfig+analogChannel
 
     SPI0CSbits.TA = 1;          // turn SPI on with the "transfer active" bit
-    
     buffer[0] = spiSendReceive(buffer[0]);
     buffer[1] = spiSendReceive(buffer[1]);
     buffer[2] = spiSendReceive(buffer[2]);
-    
-    buffer_rev[2] = spiSendReceive(buffer_rev[2]);
-    buffer_rev[1] = spiSendReceive(buffer_rev[1]);
-    buffer_rev[0] = spiSendReceive(buffer_rev[0]);
-    
     SPI0CSbits.TA = 0;          // turn off SPI
     
-    result = ( (buffer_rev[1] & 3 ) << 8 ) + buffer_rev[2];
-    printk("rev result :%d", result);
-    result = ( (buffer[1] & 3 ) << 8 ) + buffer[2];
-    printk("result: %d", result);
+    result = ( (buffer[1] & 3 ) << 8 ) + buffer[2]; // get last 10 bits
+    
     return result;
 }

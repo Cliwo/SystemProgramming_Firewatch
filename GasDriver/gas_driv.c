@@ -18,11 +18,11 @@
 #define GPIO_BASE_ADDR 0x3F200000
 
 #define IOCTL_MAGIC_NUMBER 'g'
-#define IOCTL_CMD_GET_STATUS _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
 
+#define IOCTL_CMD_GET_STATUS _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
 #define IOCTL_TEST _IOWR(IOCTL_MAGIC_NUMBER, 1, int)
 #define IOCTL_SET_FREQUENCY _IOWR(IOCTL_MAGIC_NUMBER, 2, int)
-#define IOCTL_TEST_REAL_DEV _IOWR(IOCTL_MAGIC_NUMBER, 3, int)
+
 
 int gas_open(struct inode *inode, struct file *flip){
 	printk(KERN_ALERT "GAS driver open!!\n");
@@ -39,12 +39,16 @@ int gas_release(struct inode *inode, struct file *flip){
 long gas_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
 {
 	int i = 0;
+	int result;
 	char temp;
 	char test_string[6] = {'1', '2', '3', 'a', 'b', 'c'};
+	
 	switch(cmd) {
 		case IOCTL_CMD_GET_STATUS:
-			/* TO BE IMPLEMENTED */
-			return 0; // return some value
+			result = spiReceiveDecimal();
+			printk("SPI Receive %d", result);
+			return result;
+			
 		case IOCTL_TEST:
 			for(i = 0 ; i < 6; i++)
 			{
@@ -54,14 +58,8 @@ long gas_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
 		break;
 	
 		case IOCTL_SET_FREQUENCY :
-			printk("SPI Set Clock %ld", arg);
+			printk("SPI Set Clock 250000000/%ld", arg);
 			spiSetClock(arg);
-		break;
-		
-		case IOCTL_TEST_REAL_DEV:
-			temp = spiSendReceiveDecimal(0);
-			printk("SPI Receive %c", temp);
-			return temp;
 		break;
 	}
 

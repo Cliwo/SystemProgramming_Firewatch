@@ -46,7 +46,6 @@
 #define G_IOCTL_CMD_GET_STATUS _IOWR(GAS_IOCTL_MAGIC_NUMBER, 0, int)
 #define IOCTL_TEST _IOWR(GAS_IOCTL_MAGIC_NUMBER, 1, int)
 #define IOCTL_SET_FREQUENCY _IOWR(GAS_IOCTL_MAGIC_NUMBER, 2, int)
-#define IOCTL_TEST_REAL_DEV _IOWR(GAS_IOCTL_MAGIC_NUMBER, 3, int)
 
 /* MOTOR */
 #define M_IOCTL_CMD_GET_STATUS _IOWR(MOTOR_IOCTL_MAGIC_NUMBER, 0, int)
@@ -94,7 +93,7 @@ int main()
 	ioctl(gas_fd, IOCTL_SET_FREQUENCY, 250);
 	while(1)
 	{	
-		temp = ioctl(gas_fd, IOCTL_TEST_REAL_DEV, NULL);
+		temp = ioctl(gas_fd, G_IOCTL_CMD_GET_STATUS, NULL);
 		printf("SPI %d\n", (int)temp);
 	}
     close(gas_dev);
