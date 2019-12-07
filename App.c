@@ -45,12 +45,16 @@
 /* GAS */
 #define G_IOCTL_CMD_GET_STATUS _IOWR(GAS_IOCTL_MAGIC_NUMBER, 0, int)
 #define IOCTL_TEST _IOWR(GAS_IOCTL_MAGIC_NUMBER, 1, int)
-#define IOCTL_SET_FREQUENCY _IOWR(GAS_IOCTL_MAGIC_NUMBER, 2, int)
+#define G_IOCTL_SET_FREQUENCY _IOWR(GAS_IOCTL_MAGIC_NUMBER, 2, int)
 
 /* MOTOR */
 #define M_IOCTL_CMD_GET_STATUS _IOWR(MOTOR_IOCTL_MAGIC_NUMBER, 0, int)
 #define IOCTL_CMD_START_WINDING _IOWR(MOTOR_IOCTL_MAGIC_NUMBER, 1, int)
 #define IOCTL_CMD_STOP_WINDING _IOWR(MOTOR_IOCTL_MAGIC_NUMBER, 2, int)
+
+/* Sound */
+#define S_IOCTL_CMD_GET_STATUS _IOWR(SOUND_IOCTL_MAGIC_NUMBER, 0, int)
+#define S_IOCTL_SET_FREQUENCY _IOWR(SOUND_IOCTL_MAGIC_NUMBER, 1, int)
 
 void init_dev(dev_t * dev, int * fd, int MAJOR_NUMBER, int MINOR_NUMBER, char * dev_path)
 {
@@ -64,11 +68,6 @@ void init_dev(dev_t * dev, int * fd, int MAJOR_NUMBER, int MINOR_NUMBER, char * 
 	}
 }
 
-void test_gas(int fd)
-{
-    ioctl(fd, IOCTL_TEST, NULL);
-}
-
 int main()
 {
 	int i = 20;
@@ -78,25 +77,18 @@ int main()
 
 	//init_dev(&led_dev, &led_fd, LED_MAJOR_NUMBER, LED_MINOR_NUMBER, LED_DEV_PATH_NAME);
 	//init_dev(&button_dev, &button_fd, BUTTON_MAJOR_NUMBER, BUTTON_MINOR_NUMBER, BUTTON_DEV_PATH_NAME);
-	init_dev(&gas_dev, &gas_fd, GAS_MAJOR_NUMBER, GAS_MINOR_NUMBER, GAS_DEV_PATH_NAME);
+	//init_dev(&gas_dev, &gas_fd, GAS_MAJOR_NUMBER, GAS_MINOR_NUMBER, GAS_DEV_PATH_NAME);
+	init_dev(&sound_dev, &sound_fd, SOUND_MAJOR_NUMBER, SOUND_MINOR_NUMBER, SOUND_DEV_PATH_NAME);
+	
 	/* main code */
 	
-
-	//close(button_fd);
-	//close(led_dev);
-	
-		// ioctl(gas_fd, IOCTL_SET_FREQUENCY, 1);
-		// ioctl(gas_fd, IOCTL_TEST, NULL);
-	
-	// return 0;
-	
-	ioctl(gas_fd, IOCTL_SET_FREQUENCY, 250);
+	ioctl(sound_fd, S_IOCTL_SET_FREQUENCY, 250);
 	while(1)
 	{	
-		temp = ioctl(gas_fd, G_IOCTL_CMD_GET_STATUS, NULL);
+		temp = ioctl(sound_fd, S_IOCTL_CMD_GET_STATUS, NULL);
 		printf("SPI %d\n", (int)temp);
 	}
-    close(gas_dev);
+    close(sound_dev);
 	return 0;
 }
 

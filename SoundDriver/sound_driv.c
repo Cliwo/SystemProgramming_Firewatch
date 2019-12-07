@@ -10,16 +10,23 @@
 #include <asm/io.h>
 #include <asm/uaccess.h>
 
+#include "heaven_header.h"
+
 #define SOUND_MAJOR_NUMBER 505
 #define SOUND_DEV_NAME "sound_ioctl"
 
 #define GPIO_BASE_ADDR 0x3F200000
 
 #define IOCTL_MAGIC_NUMBER 's'
-#define IOCTL_CMD_COMMAND _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
+
+#define IOCTL_CMD_GET_STATUS _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
+#define IOCTL_SET_FREQUENCY _IOWR(IOCTL_MAGIC_NUMBER, 1, int)
+
 
 int sound_open(struct inode *inode, struct file *flip){
 	printk(KERN_ALERT "SOUND driver open!!\n");
+	pioInit();
+	spiInit(250, 0);
 	return 0;	
 }
 
@@ -30,6 +37,20 @@ int sound_release(struct inode *inode, struct file *flip){
 
 long sound_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
 {
+	int i = 0;
+	int result;
+	
+	switch(cmd) {
+		case IOCTL_CMD_GET_STATUS:
+			result = spiReceiveDecimal();
+			printk("SPI Receive %d", result);
+			return result;
+	
+		case IOCTL_SET_FREQUENCY :
+			printk("SPI Set Clock 250000000/%ld", arg);
+			spiSetClock(arg);
+		break;
+	}
 	return 0;
 }
 
