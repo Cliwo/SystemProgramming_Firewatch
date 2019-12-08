@@ -6,6 +6,8 @@
 #include <linux/slab.h>
 #include <linux/delay.h>
 
+#include "heaven_header.h"
+
 #include <asm/mach/map.h>
 #include <asm/io.h>
 #include <asm/uaccess.h>
@@ -20,6 +22,8 @@
 
 int button_open(struct inode *inode, struct file *flip){
 	printk(KERN_ALERT "BUTTON driver open!!\n");
+	pioInit();
+	pinMode(20, INPUT);
 	return 0;	
 }
 
@@ -30,10 +34,12 @@ int button_release(struct inode *inode, struct file *flip){
 
 long button_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
 {
+	int button_value;
 	switch(cmd) {
 		case IOCTL_CMD_GET_STATUS:
-			/* TO BE IMPLEMENTED */
-			return 0; // return some value
+			button_value = digitalRead(20);
+			printk(KERN_ALERT "BUTTON value is %d!!\n", button_value);
+			return button_value; // return some value
 		break;
 	}
 
