@@ -58,6 +58,12 @@
 #define S_IOCTL_CMD_GET_STATUS _IOWR(SOUND_IOCTL_MAGIC_NUMBER, 0, int)
 #define S_IOCTL_SET_FREQUENCY _IOWR(SOUND_IOCTL_MAGIC_NUMBER, 1, int)
 
+typedef struct 
+{
+	int fd1;
+	int fd2;
+}Thread;
+
 void init_dev(dev_t * dev, int * fd, int MAJOR_NUMBER, int MINOR_NUMBER, char * dev_path)
 {
     *dev = makedev(MAJOR_NUMBER, MINOR_NUMBER);
@@ -76,17 +82,19 @@ void test_gas(int fd)
 }
 
 
-void* control_motor(int fd1, int fd2){
-	
+void* control_motor(void* p){
+	Thread* temp = (Thread*)p;
+	int b_fd = temp->fd1;
+	int m_fd = temp->fd2;
 	int current_button_value = 0, prev_button_value=0; 
 	int counter = 0;
-	int i = 0;
+	
 	while(1)
 	{
 		usleep(INTERVAL);
 		prev_button_value = current_button_value;
 		
-		current_button_value = ioctl(fd1, B_IOCTL_CMD_GET_STATUS);
+		current_button_value = ioctl(b_fd, B_IOCTL_CMD_GET_STATUS);
 		
 		if (prev_button_value == 0 && current_button_value != 0) {
 			printf("%d\n",counter);
@@ -94,26 +102,29 @@ void* control_motor(int fd1, int fd2){
 		}
 		if(counter == 2){
 				printf("%d\n",counter);
-					ioctl(fd2, IOCTL_CMD_MOVE_FORWARD);
+					ioctl(m_fd, IOCTL_CMD_MOVE_FORWARD);
 		}
 		if(counter == 3){
 				printf("%d\n",counter);
-				ioctl(fd2, IOCTL_CMD_STOP_WINDING);
+				ioctl(m_fd, IOCTL_CMD_STOP_WINDING);
 		}
 		if(counter == 4){
 				printf("%d\n",counter);
-				ioctl(fd2, IOCTL_CMD_MOVE_BACKWARD);
+				ioctl(m_fd, IOCTL_CMD_MOVE_BACKWARD);
 		}
 		if(counter == 5){
 				printf("%d\n",counter);
-				ioctl(fd2, IOCTL_CMD_STOP_WINDING);
+				ioctl(m_fd, IOCTL_CMD_STOP_WINDING);
 				counter = 0;
 		}
 	}
 }
 
-void* sound(int fd){
+void* sound(void* a){
 	int temp = 0;
+	int fd = *(int*)a;
+	ioctl(fd, S_IOCTL_SET_FREQUENCY, 250);
+	
 	while(1)
 	{	
 		usleep(10000);
@@ -137,20 +148,24 @@ int main()
 	/* main code */
 	//test_gas(gas_fd)
 	
-	pthread_create(&threads[0], NULL, control_motor, NULL);
-	pthread_create(&threads[1], NULL, sound, NULL);
+	Thread th1;
+	th1.fd1 = button_fd;
+	th1.fd2 = motor_fd;
+	
+	pthread_create(&threads[0], NULL, control_motor, &th1);
+	pthread_create(&threads[1], NULL, sound, &sound_fd);
 	
 	for(i = 0; i < 2; i++){
-		pthread_join(threads[i], NULL);
+		pthread_join(threads[0], NULL);
 	}
 	pthread_exit(NULL);
-		
+	
 	//control_motor(button_fd, motor_fd);
 	//sound(sound_fd);
 	
 	
 	close(button_fd);
-	close(led_dev);
+	//close(led_dev);
 	close(motor_dev);
 	//close(gas_dev);
 	close(sound_dev);
