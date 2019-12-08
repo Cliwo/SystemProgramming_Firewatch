@@ -4,6 +4,8 @@
 #include <sys/ioctl.h>
 #include <pthread.h>
 
+#define INTERVAL 		50000
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
@@ -22,11 +24,11 @@
 #define GAS_DEV_PATH_NAME "/dev/gas_ioctl"
 
 #define MOTOR_MAJOR_NUMBER 504
-#define BUTTON_MINOR_NUMBER 103
+#define MOTOR_MINOR_NUMBER 103
 #define MOTOR_DEV_PATH_NAME "/dev/motor_ioctl"
 
 #define SOUND_MAJOR_NUMBER 505
-#define BUTTON_MINOR_NUMBER 104
+#define SOUND_MINOR_NUMBER 104
 #define SOUND_DEV_PATH_NAME "/dev/sound_ioctl"
 
 #define LED_IOCTL_MAGIC_NUMBER 'j'
@@ -41,7 +43,7 @@
 #define IOCTL_CMD_SET_BRIGHTNESS _IOWR(LED_IOCTL_MAGIC_NUMBER, 2, int)
 
 /* BUTTON */
-#define IOCTL_CMD_GET_STATUS _IOWR(BUTTON_IOCTL_MAGIC_NUMBER, 0, int)
+#define B_IOCTL_CMD_GET_STATUS _IOWR(BUTTON_IOCTL_MAGIC_NUMBER, 0, int)
 
 /* GAS */
 #define IOCTL_CMD_GET_STATUS _IOWR(GAS_IOCTL_MAGIC_NUMBER, 0, int)
@@ -51,6 +53,10 @@
 #define IOCTL_CMD_MOVE_FORWARD _IOWR(MOTOR_IOCTL_MAGIC_NUMBER, 0, int)
 #define IOCTL_CMD_MOVE_BACKWARD _IOWR(MOTOR_IOCTL_MAGIC_NUMBER, 1, int)
 #define IOCTL_CMD_STOP_WINDING _IOWR(MOTOR_IOCTL_MAGIC_NUMBER, 2, int)
+
+/* Sound */
+#define S_IOCTL_CMD_GET_STATUS _IOWR(SOUND_IOCTL_MAGIC_NUMBER, 0, int)
+#define S_IOCTL_SET_FREQUENCY _IOWR(SOUND_IOCTL_MAGIC_NUMBER, 1, int)
 
 void init_dev(dev_t * dev, int * fd, int MAJOR_NUMBER, int MINOR_NUMBER, char * dev_path)
 {
@@ -107,6 +113,7 @@ void* control_motor(int fd1, int fd2){
 }
 
 void* sound(int fd){
+	int temp = 0;
 	while(1)
 	{	
 		usleep(10000);
@@ -117,6 +124,7 @@ void* sound(int fd){
 
 int main()
 {
+	int i = 0;
 	pthread_t threads[2];
 	dev_t led_dev, button_dev, gas_dev, motor_dev, sound_dev;
 	int led_fd , button_fd, gas_fd, motor_fd, sound_fd;
