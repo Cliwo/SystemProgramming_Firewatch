@@ -96,12 +96,11 @@ long motor_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
 	switch(cmd) {
 		case IOCTL_CMD_MOVE_FORWARD:
 		  printk(KERN_ALERT "move forward!!\n");
-
-		  forward(5000000, 10);
+		  forward(5000000, 1);
 		break;
 		case IOCTL_CMD_MOVE_BACKWARD:
 		    printk(KERN_ALERT "move backward!!\n");
-		    backward(5000000, 10);
+		    backward(5000000, 1);
 		break;
 		case IOCTL_CMD_STOP_WINDING:
 		  stop();

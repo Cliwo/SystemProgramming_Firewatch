@@ -71,16 +71,19 @@ void motor(int fd1){
 	
 	int current_button_value = 0, prev_button_value=0; 
 	
-	//while(1){
-			//ioctl(fd1, IOCTL_CMD_MOVE_FORWARD);
+	while(1){
+		//ioctl(fd1, IOCTL_CMD_MOVE_FORWARD);
 		//ioctl(fd1, IOCTL_CMD_MOVE_BACKWARD);
-		//usleep(INTERVAL);
-		//for(i = 0; i < 500; i++){
-		//	ioctl(fd1, IOCTL_CMD_MOVE_BACKWARD);
-		//}
+		usleep(INTERVAL);
+		for(i = 0; i < 100; i++){
+			ioctl(fd1, IOCTL_CMD_MOVE_BACKWARD);
+		}
+		for(i = 0; i < 100; i++){
+			ioctl(fd1, IOCTL_CMD_MOVE_FORWARD);
+		}
 		
 		//ioctl(fd1, IOCTL_CMD_STOP_WINDING);
-	//}
+	}
 }
 
 void button(int fd1, int fd2){
@@ -125,20 +128,20 @@ int main()
 	int led_fd , button_fd, gas_fd, motor_fd, sound_fd;
 
 	//init_dev(&led_dev, &led_fd, LED_MAJOR_NUMBER, LED_MINOR_NUMBER, LED_DEV_PATH_NAME);
-	init_dev(&button_dev, &button_fd, BUTTON_MAJOR_NUMBER, BUTTON_MINOR_NUMBER, BUTTON_DEV_PATH_NAME);
+	//init_dev(&button_dev, &button_fd, BUTTON_MAJOR_NUMBER, BUTTON_MINOR_NUMBER, BUTTON_DEV_PATH_NAME);
 	//init_dev(&gas_dev, &gas_fd, GAS_MAJOR_NUMBER, GAS_MINOR_NUMBER, GAS_DEV_PATH_NAME);
 	init_dev(&motor_dev, &motor_fd, MOTOR_MAJOR_NUMBER, MOTOR_MINOR_NUMBER, MOTOR_DEV_PATH_NAME);
 	
 	/* main code */
 	//test_gas(gas_fd);
-	button(button_fd, motor_fd);
+	//button(button_fd, motor_fd);
 	//close(button_fd);
 	//close(led_dev);
 	//button(button_fd);
-	
+	motor(motor_fd);
 	printf("Done\n");
     //close(gas_dev);
     close(motor_dev);
-    close(button_dev);
+    //close(button_dev);
 	return 0;
 }
