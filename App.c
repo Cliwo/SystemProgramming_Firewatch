@@ -4,7 +4,7 @@
 #include <sys/ioctl.h>
 #include <pthread.h>
 
-#define INTERVAL 		50000
+#define INTERVAL 		5000
 
 #include <sys/types.h>
 #include <sys/stat.h>
