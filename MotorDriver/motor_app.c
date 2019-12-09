@@ -2,14 +2,13 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include <pthread.h>
-
-#define INTERVAL 		5000
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/sysmacros.h>
+
+#define INTERVAL 		50000
 
 #define LED_MAJOR_NUMBER 501
 #define LED_MINOR_NUMBER 100
@@ -48,22 +47,11 @@
 /* GAS */
 #define G_IOCTL_CMD_GET_STATUS _IOWR(GAS_IOCTL_MAGIC_NUMBER, 0, int)
 #define IOCTL_TEST _IOWR(GAS_IOCTL_MAGIC_NUMBER, 1, int)
-#define G_IOCTL_SET_FREQUENCY _IOWR(GAS_IOCTL_MAGIC_NUMBER, 2, int)
 
 /* MOTOR */
 #define IOCTL_CMD_MOVE_FORWARD _IOWR(MOTOR_IOCTL_MAGIC_NUMBER, 0, int)
 #define IOCTL_CMD_MOVE_BACKWARD _IOWR(MOTOR_IOCTL_MAGIC_NUMBER, 1, int)
 #define IOCTL_CMD_STOP_WINDING _IOWR(MOTOR_IOCTL_MAGIC_NUMBER, 2, int)
-
-/* Sound */
-#define S_IOCTL_CMD_GET_STATUS _IOWR(SOUND_IOCTL_MAGIC_NUMBER, 0, int)
-#define S_IOCTL_SET_FREQUENCY _IOWR(SOUND_IOCTL_MAGIC_NUMBER, 1, int)
-
-typedef struct 
-{
-	int fd1;
-	int fd2;
-}Thread;
 
 void init_dev(dev_t * dev, int * fd, int MAJOR_NUMBER, int MINOR_NUMBER, char * dev_path)
 {
@@ -72,104 +60,88 @@ void init_dev(dev_t * dev, int * fd, int MAJOR_NUMBER, int MINOR_NUMBER, char * 
     *fd = open(dev_path, O_RDWR);
 
     if(*fd < 0){
-		printf("fail to open %s\n", dev_path);	
+		printf("fail to open %s\n", dev_path);
+		
 	}
 }
 
-void* control_motor(void* p){
-	Thread* temp = (Thread*)p;
-	int b_fd = temp->fd1;
-	int m_fd = temp->fd2;
+
+void motor(int fd1){
+	int i = 0;
+	
+	int current_button_value = 0, prev_button_value=0; 
+	
+	while(1){
+		//ioctl(fd1, IOCTL_CMD_MOVE_FORWARD);
+		//ioctl(fd1, IOCTL_CMD_MOVE_BACKWARD);
+		usleep(INTERVAL);
+		for(i = 0; i < 100; i++){
+			ioctl(fd1, IOCTL_CMD_MOVE_BACKWARD);
+		}
+		for(i = 0; i < 100; i++){
+			ioctl(fd1, IOCTL_CMD_MOVE_FORWARD);
+		}
+		
+		//ioctl(fd1, IOCTL_CMD_STOP_WINDING);
+	}
+}
+
+void button(int fd1, int fd2){
+	
 	int current_button_value = 0, prev_button_value=0; 
 	int counter = 0;
-	
+	int i = 0;
 	while(1)
 	{
 		usleep(INTERVAL);
 		prev_button_value = current_button_value;
 		
-		current_button_value = ioctl(b_fd, B_IOCTL_CMD_GET_STATUS);
+		current_button_value = ioctl(fd1, B_IOCTL_CMD_GET_STATUS);
 		
 		if (prev_button_value == 0 && current_button_value != 0) {
 			printf("%d\n",counter);
 			counter += 1;
 		}
 		if(counter == 2){
-			printf("%d\n",counter);
-			ioctl(m_fd, IOCTL_CMD_MOVE_FORWARD);
+				printf("%d\n",counter);
+					ioctl(fd2, IOCTL_CMD_MOVE_FORWARD);
 		}
 		if(counter == 3){
-			printf("%d\n",counter);
-			ioctl(m_fd, IOCTL_CMD_STOP_WINDING);
+				printf("%d\n",counter);
+				ioctl(fd2, IOCTL_CMD_STOP_WINDING);
 		}
 		if(counter == 4){
-			printf("%d\n",counter);
-			ioctl(m_fd, IOCTL_CMD_MOVE_BACKWARD);
+				printf("%d\n",counter);
+				ioctl(fd2, IOCTL_CMD_MOVE_BACKWARD);
 		}
 		if(counter == 5){
-			printf("%d\n",counter);
-			ioctl(m_fd, IOCTL_CMD_STOP_WINDING);
-			counter = 0;
+				printf("%d\n",counter);
+				ioctl(fd2, IOCTL_CMD_STOP_WINDING);
+				counter = 0;
 		}
 	}
 }
 
-void* sound(void* a){
-	int temp = 0;
-	int fd = *(int*)a;
-	ioctl(fd, S_IOCTL_SET_FREQUENCY, 250);
-	
-	while(1)
-	{	
-		usleep(10000);
-		temp = ioctl(fd, S_IOCTL_CMD_GET_STATUS, NULL);
-		printf("SPI %d\n", (int)temp);
-	}
-}
-	
 int main()
 {
-	int i = 0;
-	long temp;
-	pthread_t threads[2];
 	dev_t led_dev, button_dev, gas_dev, motor_dev, sound_dev;
 	int led_fd , button_fd, gas_fd, motor_fd, sound_fd;
 
-	/* main code */
-	init_dev(&button_dev, &button_fd, BUTTON_MAJOR_NUMBER, BUTTON_MINOR_NUMBER, BUTTON_DEV_PATH_NAME);
-	init_dev(&motor_dev, &motor_fd, MOTOR_MAJOR_NUMBER, MOTOR_MINOR_NUMBER, MOTOR_DEV_PATH_NAME);
-	init_dev(&sound_dev, &sound_fd, SOUND_MAJOR_NUMBER, SOUND_MINOR_NUMBER, SOUND_DEV_PATH_NAME);
 	//init_dev(&led_dev, &led_fd, LED_MAJOR_NUMBER, LED_MINOR_NUMBER, LED_DEV_PATH_NAME);
+	//init_dev(&button_dev, &button_fd, BUTTON_MAJOR_NUMBER, BUTTON_MINOR_NUMBER, BUTTON_DEV_PATH_NAME);
 	//init_dev(&gas_dev, &gas_fd, GAS_MAJOR_NUMBER, GAS_MINOR_NUMBER, GAS_DEV_PATH_NAME);
-
-	Thread th1;
-	th1.fd1 = button_fd;
-	th1.fd2 = motor_fd;
+	init_dev(&motor_dev, &motor_fd, MOTOR_MAJOR_NUMBER, MOTOR_MINOR_NUMBER, MOTOR_DEV_PATH_NAME);
 	
-	pthread_create(&threads[0], NULL, control_motor, &th1);
-	pthread_create(&threads[1], NULL, sound, &sound_fd);
-	
-	for(i = 0; i < 2; i++){
-		pthread_join(threads[0], NULL);
-	}
-	pthread_exit(NULL);
-
-	ioctl(sound_fd, S_IOCTL_SET_FREQUENCY, 250);
-	while(1)
-	{	
-		temp = ioctl(sound_fd, S_IOCTL_CMD_GET_STATUS, NULL);
-		printf("SPI %d\n", (int)temp);
-	}
-	
-	//control_motor(button_fd, motor_fd);
-	//sound(sound_fd);
-	
-	close(button_fd);
-	close(motor_dev);
-	close(sound_dev);
-	//close(gas_dev);
+	/* main code */
+	//test_gas(gas_fd);
+	//button(button_fd, motor_fd);
+	//close(button_fd);
 	//close(led_dev);
-
+	//button(button_fd);
+	motor(motor_fd);
+	printf("Done\n");
+    //close(gas_dev);
+    close(motor_dev);
+    //close(button_dev);
 	return 0;
 }
-
