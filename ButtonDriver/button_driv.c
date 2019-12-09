@@ -6,7 +6,7 @@
 #include <linux/slab.h>
 #include <linux/delay.h>
 
-#include "heaven_header.h"
+#include "../heaven_header.h"
 
 #include <asm/mach/map.h>
 #include <asm/io.h>

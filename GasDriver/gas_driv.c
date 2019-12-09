@@ -10,7 +10,7 @@
 #include <asm/io.h>
 #include <asm/uaccess.h>
 
-#include "heaven_header.h"
+#include "../heaven_header.h"
 
 #define GAS_MAJOR_NUMBER 503
 #define GAS_DEV_NAME "gas_ioctl"

@@ -10,7 +10,7 @@
 #include <asm/io.h>
 #include <asm/uaccess.h>
 
-#include "heaven_header.h"
+#include "../heaven_header.h"
 
 #define SOUND_MAJOR_NUMBER 505
 #define SOUND_DEV_NAME "sound_ioctl"
