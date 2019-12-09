@@ -64,31 +64,37 @@ void init_dev(dev_t * dev, int * fd, int MAJOR_NUMBER, int MINOR_NUMBER, char * 
 
     if(*fd < 0){
 		printf("fail to open %s\n", dev_path);
-		
 	}
 }
 
 int main()
 {
 	int i = 20;
-	long temp;
+	long gas_value, sound_value;
 	dev_t led_dev, button_dev, gas_dev, motor_dev, sound_dev;
 	int led_fd , button_fd, gas_fd, motor_fd, sound_fd;
 
 	//init_dev(&led_dev, &led_fd, LED_MAJOR_NUMBER, LED_MINOR_NUMBER, LED_DEV_PATH_NAME);
 	//init_dev(&button_dev, &button_fd, BUTTON_MAJOR_NUMBER, BUTTON_MINOR_NUMBER, BUTTON_DEV_PATH_NAME);
-	//init_dev(&gas_dev, &gas_fd, GAS_MAJOR_NUMBER, GAS_MINOR_NUMBER, GAS_DEV_PATH_NAME);
+	init_dev(&gas_dev, &gas_fd, GAS_MAJOR_NUMBER, GAS_MINOR_NUMBER, GAS_DEV_PATH_NAME);
 	init_dev(&sound_dev, &sound_fd, SOUND_MAJOR_NUMBER, SOUND_MINOR_NUMBER, SOUND_DEV_PATH_NAME);
 	
 	/* main code */
 	
+	ioctl(gas_fd, G_IOCTL_SET_FREQUENCY, 250);
 	ioctl(sound_fd, S_IOCTL_SET_FREQUENCY, 250);
+	
 	while(1)
 	{	
 		usleep(10000);
-		temp = ioctl(sound_fd, S_IOCTL_CMD_GET_STATUS, NULL);
-		printf("SPI %d\n", (int)temp);
+		gas_value = ioctl(gas_fd, G_IOCTL_CMD_GET_STATUS, NULL);
+		sound_value = ioctl(sound_fd, S_IOCTL_CMD_GET_STATUS, NULL);
+		
+		printf("SPI0 %d\n", (int)gas_value);
+		printf("SPI1 %d\n", (int)sound_value);
 	}
+	
     close(sound_dev);
+    
 	return 0;
 }
