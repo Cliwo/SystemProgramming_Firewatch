@@ -4,7 +4,7 @@
 #include <sys/ioctl.h>
 #include <pthread.h>
 
-#define INTERVAL 		5000
+#define INTERVAL 		30000
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -114,23 +114,30 @@ void* control_motor(void* p){
 	}
 }
 
-void* sound(void* a){
-	int temp = 0;
-	int fd = *(int*)a;
-	ioctl(fd, S_IOCTL_SET_FREQUENCY, 250);
+void* adc(void* p){
+	Thread* temp = (Thread*)p;
+	int g_fd = temp->fd1;
+	int s_fd = temp->fd2;
+	long gas_value, sound_value;
+	
+	ioctl(g_fd, G_IOCTL_SET_FREQUENCY, 250);
+	ioctl(s_fd, S_IOCTL_SET_FREQUENCY, 250);
 	
 	while(1)
 	{	
 		usleep(10000);
-		temp = ioctl(fd, S_IOCTL_CMD_GET_STATUS, NULL);
-		printf("SPI %d\n", (int)temp);
+		gas_value = ioctl(g_fd, G_IOCTL_CMD_GET_STATUS, NULL);
+		sound_value = ioctl(s_fd, S_IOCTL_CMD_GET_STATUS, NULL);
+		
+		printf("SPI0 %d\n", (int)gas_value);
+		printf("SPI1 %d\n", (int)sound_value);
 	}
 }
 	
 int main()
 {
 	int i = 0;
-	long temp;
+	long gas_value, sound_value;
 	pthread_t threads[2];
 	dev_t led_dev, button_dev, gas_dev, motor_dev, sound_dev;
 	int led_fd , button_fd, gas_fd, motor_fd, sound_fd;
@@ -140,34 +147,28 @@ int main()
 	init_dev(&motor_dev, &motor_fd, MOTOR_MAJOR_NUMBER, MOTOR_MINOR_NUMBER, MOTOR_DEV_PATH_NAME);
 	init_dev(&sound_dev, &sound_fd, SOUND_MAJOR_NUMBER, SOUND_MINOR_NUMBER, SOUND_DEV_PATH_NAME);
 	//init_dev(&led_dev, &led_fd, LED_MAJOR_NUMBER, LED_MINOR_NUMBER, LED_DEV_PATH_NAME);
-	//init_dev(&gas_dev, &gas_fd, GAS_MAJOR_NUMBER, GAS_MINOR_NUMBER, GAS_DEV_PATH_NAME);
+	init_dev(&gas_dev, &gas_fd, GAS_MAJOR_NUMBER, GAS_MINOR_NUMBER, GAS_DEV_PATH_NAME);
 
 	Thread th1;
 	th1.fd1 = button_fd;
 	th1.fd2 = motor_fd;
 	
+	Thread th2;
+	th2.fd1 = gas_fd;
+	th2.fd2 = sound_fd;
+	
 	pthread_create(&threads[0], NULL, control_motor, &th1);
-	pthread_create(&threads[1], NULL, sound, &sound_fd);
+	pthread_create(&threads[1], NULL, adc, &th2);
 	
 	for(i = 0; i < 2; i++){
-		pthread_join(threads[0], NULL);
+		pthread_join(threads[i], NULL);
 	}
 	pthread_exit(NULL);
 
-	ioctl(sound_fd, S_IOCTL_SET_FREQUENCY, 250);
-	while(1)
-	{	
-		temp = ioctl(sound_fd, S_IOCTL_CMD_GET_STATUS, NULL);
-		printf("SPI %d\n", (int)temp);
-	}
-	
-	//control_motor(button_fd, motor_fd);
-	//sound(sound_fd);
-	
 	close(button_fd);
 	close(motor_dev);
 	close(sound_dev);
-	//close(gas_dev);
+	close(gas_dev);
 	//close(led_dev);
 
 	return 0;
