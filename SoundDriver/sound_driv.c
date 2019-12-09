@@ -42,7 +42,7 @@ long sound_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
 	
 	switch(cmd) {
 		case IOCTL_CMD_GET_STATUS:
-			result = spiReceiveDecimal();
+			result = spiReceiveDecimalCS1();
 			printk("SPI Receive %d", result);
 			return result;
 	

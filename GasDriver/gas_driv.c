@@ -20,8 +20,7 @@
 #define IOCTL_MAGIC_NUMBER 'g'
 
 #define IOCTL_CMD_GET_STATUS _IOWR(IOCTL_MAGIC_NUMBER, 0, int)
-#define IOCTL_TEST _IOWR(IOCTL_MAGIC_NUMBER, 1, int)
-#define IOCTL_SET_FREQUENCY _IOWR(IOCTL_MAGIC_NUMBER, 2, int)
+#define IOCTL_SET_FREQUENCY _IOWR(IOCTL_MAGIC_NUMBER, 1, int)
 
 
 int gas_open(struct inode *inode, struct file *flip){
@@ -48,15 +47,6 @@ long gas_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
 			result = spiReceiveDecimal();
 			printk("SPI Receive %d", result);
 			return result;
-			
-		case IOCTL_TEST:
-			for(i = 0 ; i < 6; i++)
-			{
-				temp = spiSendReceive(test_string[i]);
-				printk("SPI Receive %c", temp);
-			}
-		break;
-	
 		case IOCTL_SET_FREQUENCY :
 			printk("SPI Set Clock 250000000/%ld", arg);
 			spiSetClock(arg);
