@@ -6,11 +6,11 @@
 #include <linux/slab.h>
 #include <linux/delay.h>
 
-#include "../heaven_header.h"
-
 #include <asm/mach/map.h>
 #include <asm/io.h>
 #include <asm/uaccess.h>
+
+#include "../heaven_header.h"
 
 #define BUTTON_MAJOR_NUMBER 502
 #define BUTTON_DEV_NAME "button_ioctl"

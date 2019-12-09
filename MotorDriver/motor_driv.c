@@ -6,11 +6,11 @@
 #include <linux/slab.h>
 #include <linux/delay.h>
 
-#include "../heaven_header.h"
-
 #include <asm/mach/map.h>
 #include <asm/io.h>
 #include <asm/uaccess.h>
+
+#include "../heaven_header.h"
 
 #define MOTOR_MAJOR_NUMBER 504
 #define MOTOR_DEV_NAME "motor_ioctl"
