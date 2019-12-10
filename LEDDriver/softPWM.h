@@ -1,6 +1,15 @@
-#include "../heaven_header.h"
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <sys/sysmacros.h>
+
 #include <pthread.h>
 
 // MAX_PINS:
@@ -11,6 +20,11 @@
 #define MAX_PINS    32
 #define GPIO_18_IN_PIN_NUM 1
 
+#define IOCTL_MAGIC_NUMBER      'j'
+#define IOCTL_CMD_DIGITAL_WRITE_HIGH _IOWR(IOCTL_MAGIC_NUMBER, 4, int)
+#define IOCTL_CMD_DIGITAL_WRITE_LOW _IOWR(IOCTL_MAGIC_NUMBER, 5, int)
+#define IOCTL_CMD_PIN_MODE_HIGH _IOWR(IOCTL_MAGIC_NUMBER, 6, int)
+#define IOCTL_CMD_PIN_MODE_LOW _IOWR(IOCTL_MAGIC_NUMBER, 7, int)
 
 // The PWM Frequency is derived from the "pulse time" below. Essentially,
 //    the frequency is a function of the range and this pulse time.
@@ -33,6 +47,27 @@ static volatile int range         [MAX_PINS] ;
 static volatile pthread_t threads [MAX_PINS] ;
 static volatile int newPin = -1 ;
 
+static int led_fd_SOFT;
+
+void digitalWriteHIGH()
+{
+    ioctl(led_fd_SOFT, IOCTL_CMD_DIGITAL_WRITE_HIGH, GPIO_18_IN_PIN_NUM);
+}
+
+void digitalWriteLOW()
+{
+    ioctl(led_fd_SOFT, IOCTL_CMD_DIGITAL_WRITE_LOW, GPIO_18_IN_PIN_NUM);
+}
+
+void pinModeHIGH()
+{
+    ioctl(led_fd_SOFT, IOCTL_CMD_PIN_MODE_HIGH, GPIO_18_IN_PIN_NUM);
+}
+
+void pinModeLOW()
+{
+    ioctl(led_fd_SOFT, IOCTL_CMD_PIN_MODE_LOW, GPIO_18_IN_PIN_NUM);
+}
 
 /*
 * piHiPri:
@@ -81,12 +116,12 @@ static void * softPwmThread (void *arg)
     space = range [pin] - mark ;
 
     if (mark != 0)
-      digitalWrite (pin, HIGH) ;
-    delayMicroseconds (mark * 100) ;
+      digitalWriteHIGH();
+    usleep (mark * 100) ;
 
     if (space != 0)
-      digitalWrite (pin, LOW) ;
-    delayMicroseconds (space * 100) ;
+      digitalWriteLOW() ;
+    usleep (space * 100) ;
   }
 
   return NULL ;
@@ -134,12 +169,12 @@ int softPwmCreate (int pin, int initialValue, int pwmRange)
   if (pwmRange <= 0)
     return -1 ;
 
-  passPin = malloc (sizeof (*passPin)) ;
+  passPin = (int*) malloc (sizeof (*passPin)) ;
   if (passPin == NULL)
     return -1 ;
 
-  digitalWrite (pin, LOW) ;
-  pinMode      (pin, OUTPUT) ;
+  digitalWriteLOW();
+  pinModeHIGH();
 
   marks [pin] = initialValue ;
   range [pin] = pwmRange ;
@@ -149,7 +184,7 @@ int softPwmCreate (int pin, int initialValue, int pwmRange)
   res      = pthread_create (&myThread, NULL, softPwmThread, (void *)passPin) ;
 
   while (newPin != -1)
-    delay (1) ;
+    sleep (1);
 
   threads [pin] = myThread ;
 
@@ -172,7 +207,20 @@ void softPwmStop (int pin)
       pthread_cancel (threads [pin]) ;
       pthread_join   (threads [pin], NULL) ;
       range [pin] = 0 ;
-      digitalWrite (pin, LOW) ;
+      digitalWriteLOW();
     }
   }
+}
+
+void testPWM(void)
+{
+    int pin = GPIO_18_IN_PIN_NUM; //or 18
+    int i = 0;
+    softPwmCreate (pin, 0, PWM_RANGE); 
+    
+    for(i = 0 ; i < 100; i++)
+    {
+        printf("Hi");
+        softPwmWrite(pin, i);
+    }
 }

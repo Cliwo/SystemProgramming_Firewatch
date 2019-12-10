@@ -31,6 +31,11 @@
 #define IOCTL_CMD_SET_LED_OFF   _IOWR(IOCTL_MAGIC_NUMBER, 1, int)
 #define IOCTL_CMD_BRIGHT        _IOWR(IOCTL_MAGIC_NUMBER, 2, int)
 
+#define IOCTL_CMD_DIGITAL_WRITE_HIGH _IOWR(IOCTL_MAGIC_NUMBER, 4, int)
+#define IOCTL_CMD_DIGITAL_WRITE_LOW _IOWR(IOCTL_MAGIC_NUMBER, 5, int)
+#define IOCTL_CMD_PIN_MODE_HIGH _IOWR(IOCTL_MAGIC_NUMBER, 6, int)
+#define IOCTL_CMD_PIN_MODE_LOW _IOWR(IOCTL_MAGIC_NUMBER, 7, int)
+
 static void __iomem * gpio_base;
 static void __iomem * pwm_base;
 static void __iomem * clk_base;
@@ -119,7 +124,22 @@ long led_ioctl(struct file * filp, unsigned int cmd, unsigned long arg)
         *pwm_dat1 = arg;
         printk(KERN_ALERT "%d\n", arg);
         break; 
+        
+        case IOCTL_CMD_DIGITAL_WRITE_HIGH:
+        printk(KERN_ALERT "Write High\n");
+        digitalWrite(arg, 1);
+            
+        case IOCTL_CMD_DIGITAL_WRITE_LOW:
+        printk(KERN_ALERT "Write Low\n");
+        digitalWrite(arg, 0);
+            
+        case IOCTL_CMD_PIN_MODE_HIGH:
+        printk(KERN_ALERT "Pin MODE High\n");
+        pinMode(arg, 1);
 
+        case IOCTL_CMD_PIN_MODE_LOW:
+        printk(KERN_ALERT "Pin MODE Low\n");
+        pinMode(arg, 0);
         
         default : 
         printk(KERN_ALERT "ioctl : command error\n");
